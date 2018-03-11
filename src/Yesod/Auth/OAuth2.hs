@@ -20,6 +20,7 @@ module Yesod.Auth.OAuth2
     -- * Reading our @'credsExtra'@ keys
     , getAccessToken
     , getRefreshToken
+    , getExpiresIn
     , getUserResponse
     , getUserResponseJSON
     ) where
@@ -28,7 +29,7 @@ import Control.Error.Util (note)
 import Control.Monad ((<=<))
 import Data.Aeson (FromJSON, eitherDecode)
 import Data.ByteString.Lazy (ByteString, fromStrict)
-import Data.Text (Text)
+import Data.Text (Text, unpack)
 import Data.Text.Encoding (encodeUtf8)
 import Network.HTTP.Conduit (Manager)
 import Network.OAuth.OAuth2
@@ -67,6 +68,14 @@ authOAuth2Widget widget name oauth getCreds =
 getAccessToken :: Creds m -> Maybe AccessToken
 getAccessToken =
     (AccessToken <$>) . lookup "accessToken" . credsExtra
+
+getExtraValue :: (Text -> a) -> Text -> Creds m -> Maybe a
+getExtraValue constructor extraKey =
+    (constructor <$>) . lookup extraKey . credsExtra
+
+-- | Read from the values set via @'setExtra'@
+getExpiresIn :: Creds m -> Maybe Int
+getExpiresIn = fmap (read . unpack) . lookup "expiresIn" . credsExtra
 
 -- | Read the @'RefreshToken'@ from the values set via @'setExtra'@
 --

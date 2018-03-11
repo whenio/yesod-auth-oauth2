@@ -123,6 +123,8 @@ scopeParam d = ("scope", ) . encodeUtf8 . T.intercalate d
 setExtra :: OAuth2Token -> BL.ByteString -> [(Text, Text)]
 setExtra token userResponse =
     [ ("accessToken", atoken $ accessToken token)
+    , ("refreshToken", rtoken $ maybe (RefreshToken mempty) id $ refreshToken token)
+    , ("expiresIn", maybe "0" (T.pack . show) $ expiresIn token)
     , ("userResponse", decodeUtf8 $ BL.toStrict userResponse)
     ]
     <> maybe [] (pure . ("refreshToken", ) . rtoken) (refreshToken token)
